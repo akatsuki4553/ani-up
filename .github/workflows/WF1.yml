@@ -1,0 +1,40 @@
+name: eps_up
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9999
+
+    steps:
+    - name: setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: checkout repo content
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ secrets.SOURCE_REPO }}
+        token: ${{ secrets.PAT }}
+    - name: start python script
+      run: |
+        pip install requests
+        python main.py
+      env:
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        SALT: ${{ secrets.SALT }}
+        PAT: ${{ secrets.PAT }}
+  rerun:
+    if: always()
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: send api request
+      run: |
+        curl \
+        -X POST \
+        -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: token ${{ secrets.PAT }}" \
+        https://api.github.com/repos/AM-Kishk/ani-up/actions/workflows/WF1.yml/dispatches \
+        -d '{"ref": "${{ github.ref }}" }'
