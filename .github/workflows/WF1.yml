@@ -1,4 +1,4 @@
-name: eps_up
+name: build
 
 on:
  schedule:
